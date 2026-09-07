@@ -128,16 +128,43 @@ const confusableWords = [
   "transportation",
 ];
 
-const sampleEntries = [
-  "accommodation",
-  "evidence",
-  "significant",
-  "maintenance",
-  "sustainable",
-  "infrastructure",
-  "assessment",
-  "priority",
-];
+// Each practice mode opens with a small, complete offline deck. Keeping the
+// meaning and example on the same line makes the public demo usable even when
+// it has no saved data and cannot call the local server.
+const sampleEntriesByMode = Object.freeze({
+  listening: [
+    "accommodation|住宿；住处|The university offers affordable accommodation near the main campus.",
+    "environment|环境；周围状况|A quiet environment can help students concentrate on their work.",
+    "evidence|证据；依据|The report provides clear evidence that air quality has improved.",
+    "significant|重要的；显著的|Public transport has made a significant difference to daily travel.",
+    "maintenance|维护；保养|Regular maintenance keeps the laboratory equipment safe to use.",
+    "sustainable|可持续的|The city is investing in sustainable forms of public transport.",
+  ],
+  dictation: [
+    "opportunity|机会；时机|The scholarship gave her an opportunity to study abroad.",
+    "pronunciation|发音|Clear pronunciation helps listeners understand unfamiliar words.",
+    "recommendation|建议；推荐|The committee made a recommendation to improve student support.",
+    "responsibility|责任；职责|It is the manager's responsibility to keep the records accurate.",
+    "transportation|交通；运输|Public transportation is often cheaper than travelling by car.",
+    "vocabulary|词汇；词汇量|Reading widely can help students expand their academic vocabulary.",
+  ],
+  reading: [
+    "analysis|分析；解析|The final analysis revealed a clear pattern in the survey responses.",
+    "consequence|结果；后果|One consequence of heavy traffic is increased air pollution.",
+    "infrastructure|基础设施|Reliable digital infrastructure allows rural schools to offer online lessons.",
+    "interpretation|解释；理解|The researchers offered a different interpretation of the same results.",
+    "assessment|评估；评价|The course includes a written assessment after the final lesson.",
+    "strategy|策略；战略|The school introduced a new strategy to reduce energy use.",
+  ],
+});
+
+function getSampleEntriesForMode(mode) {
+  return sampleEntriesByMode[mode] || sampleEntriesByMode.listening;
+}
+
+function getSampleInputForMode(mode) {
+  return getSampleEntriesForMode(mode).join("\n");
+}
 
 const wordNotes = {
   accommodation: {
@@ -1293,6 +1320,8 @@ const BOOK_STORAGE_KEY = "ieltsTrainerFavoriteBookV1";
 const FAVORITE_DELETED_STORAGE_KEY = "ieltsTrainerFavoriteDeletedV1";
 const USER_NOTES_STORAGE_KEY = "ieltsTrainerUserNotesV1";
 const MODE_INPUT_STORAGE_KEY = "ieltsTrainerModeInputsV1";
+const DEMO_SAMPLE_SEED_STORAGE_KEY = "ieltsTrainerDemoSampleSeedV1";
+const DEMO_SAMPLE_SEED_VERSION = "1";
 const CORRECT_STORAGE_KEY = "ieltsTrainerCorrectBookV1";
 const TRAINING_SNAPSHOT_STORAGE_KEY = "ieltsTrainerSnapshotV1";
 const TRAINING_SNAPSHOT_BACKUP_KEYS = [
@@ -1469,6 +1498,7 @@ const settingsVoiceMount = document.querySelector("#settingsVoiceMount");
 const settingsShortcutMount = document.querySelector("#settingsShortcutMount");
 const toolDrawer = document.querySelector(".tool-drawer");
 const modeRadios = [...document.querySelectorAll('input[name="quizMode"]')];
+const practiceDrawer = document.querySelector(".practice-drawer");
 const wordInput = document.querySelector("#wordInput");
 const optionCount = document.querySelector("#optionCount");
 const rateControl = document.querySelector("#rateControl");
@@ -4381,15 +4411,48 @@ function createEmptyModeInputs() {
   };
 }
 
+function createSampleModeInputs() {
+  return bookModes.reduce((inputs, mode) => {
+    inputs[mode] = getSampleInputForMode(mode);
+    return inputs;
+  }, createEmptyModeInputs());
+}
+
+function isStaticPracticeDemo() {
+  return ieltsLabConfig.deployment === "static" || ieltsLabConfig.deployment === "file";
+}
+
 function loadModeInputs() {
   try {
-    const saved = JSON.parse(window.localStorage.getItem(MODE_INPUT_STORAGE_KEY) || "{}");
-    return bookModes.reduce((inputs, mode) => {
-      inputs[mode] = typeof saved?.[mode] === "string" ? saved[mode] : "";
-      return inputs;
+    const storedValue = window.localStorage.getItem(MODE_INPUT_STORAGE_KEY);
+    const saved = JSON.parse(storedValue || "{}");
+    const inputs = bookModes.reduce((result, mode) => {
+      result[mode] = typeof saved?.[mode] === "string" ? saved[mode] : "";
+      return result;
     }, createEmptyModeInputs());
+
+    // Brand-new users get a ready-to-run deck. The one-time demo migration also
+    // repairs empty values written by older releases; after that, an intentional
+    // clear remains empty instead of being silently refilled on every switch.
+    if (!storedValue) {
+      const initialInputs = createSampleModeInputs();
+      if (isStaticPracticeDemo()) {
+        window.localStorage.setItem(DEMO_SAMPLE_SEED_STORAGE_KEY, DEMO_SAMPLE_SEED_VERSION);
+      }
+      return initialInputs;
+    }
+    if (
+      isStaticPracticeDemo() &&
+      window.localStorage.getItem(DEMO_SAMPLE_SEED_STORAGE_KEY) !== DEMO_SAMPLE_SEED_VERSION
+    ) {
+      bookModes.forEach((mode) => {
+        if (!inputs[mode].trim()) inputs[mode] = getSampleInputForMode(mode);
+      });
+      window.localStorage.setItem(DEMO_SAMPLE_SEED_STORAGE_KEY, DEMO_SAMPLE_SEED_VERSION);
+    }
+    return inputs;
   } catch {
-    return createEmptyModeInputs();
+    return createSampleModeInputs();
   }
 }
 
@@ -5228,7 +5291,7 @@ async function restoreTraining() {
 function restoreSavedSessionForMode(mode, announce = true) {
   const session = state.savedSessions[mode];
   if (!session?.deck?.length) {
-    resetPracticeSurface(announce ? `${getModeLabel(mode)}已切换` : "等待开始");
+    resetPracticeSurface(getPracticeSetupMessage(mode, announce));
     return false;
   }
 
@@ -5265,6 +5328,16 @@ function restoreSavedSessionForMode(mode, announce = true) {
   updateScoreBox();
   if (announce) saveStatus.textContent = `已恢复${getModeLabel(mode)}的保存进度。`;
   return true;
+}
+
+function getPracticeSetupMessage(mode, announce = false) {
+  const count = parseEntries(wordInput.value).length;
+  if (!count) return announce ? `${getModeLabel(mode)}已切换` : "选择模式并输入单词后开始";
+
+  const isBundledSample = wordInput.value.trim() === getSampleInputForMode(mode).trim();
+  const prefix = announce ? `${getModeLabel(mode)}已切换；` : "";
+  const listLabel = isBundledSample ? "示例单词" : "单词";
+  return `${prefix}已备好 ${count} 个${listLabel}，点击“开始练习”`;
 }
 
 function saveCurrentModeInput() {
@@ -11003,7 +11076,7 @@ function handleGlobalShortcut(event) {
 }
 
 function loadSampleWords() {
-  wordInput.value = sampleEntries.join("\n");
+  wordInput.value = getSampleInputForMode(getSelectedMode());
   saveCurrentModeInput();
   startQuiz();
 }
@@ -11705,6 +11778,14 @@ setPrimarySurface("quiz");
 updateListeningMistakeNavVisibility();
 wordInput.value = state.modeInputs[state.mode] || wordInput.value;
 saveCurrentModeInput();
+roundState.textContent = getPracticeSetupMessage(state.mode);
+if (
+  practiceDrawer &&
+  isStaticPracticeDemo() &&
+  wordInput.value.trim() === getSampleInputForMode(state.mode).trim()
+) {
+  practiceDrawer.open = true;
+}
 loadVoices();
 updateSetupControls();
 updateScoreBox();
