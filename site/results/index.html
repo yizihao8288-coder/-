@@ -1,29 +1,29 @@
 <!doctype html>
-<html lang="en">
+<html lang="zh-CN">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23c95735'/%3E%3Ctext x='32' y='45' text-anchor='middle' font-size='42' font-style='italic' fill='white'%3EI%3C/text%3E%3C/svg%3E">
-    <title>Research status · IELTS Learning Lab</title>
+    <title>研究进度 · IELTS Learning Lab</title>
     <link rel="stylesheet" href="../styles.css">
   </head>
   <body>
     <header class="nav">
       <a class="brand" href="../"><span>I</span> IELTS Learning Lab</a>
-      <nav><a href="../demo/">Demo</a><a href="https://github.com/yizihao8288-coder/ielts-learning-lab/blob/main/docs/research-protocol.md">Protocol</a></nav>
+      <nav><a href="../demo/">在线体验</a><a href="https://github.com/yizihao8288-coder/ielts-learning-lab/blob/main/docs/research-protocol.md">详细研究方案</a></nav>
     </header>
     <main>
       <section class="hero">
         <div>
-          <p class="kicker">RESEARCH STATUS · 2 SEPTEMBER 2026</p>
-          <h1>Method ready. Results pending.</h1>
-          <p class="lede">The generation, validation, one-repair guardrail and HTTP fallback are implemented. Twelve automated tests pass. The 900-output comparison and 60-item single-author blind review have not been run, so no condition is declared better.</p>
-          <div class="actions"><a class="button primary" href="../demo/">Try the product</a><a class="button secondary" href="https://github.com/yizihao8288-coder/ielts-learning-lab">Inspect the code</a></div>
+          <p class="kicker">研究进度 · 更新于 2026 年 9 月 8 日</p>
+          <h1>检查方法已经做好，正式比较还没有开始。</h1>
+          <p class="lede">我在开发词汇工具时发现：AI 能把答案填得很整齐，但词义和例句仍可能不能直接拿来学习。因此我设计了三种生成方法，想看看“固定格式、内容检查和一次改错机会”能不能减少这些问题。目前程序和 12 项自动测试已经完成，但 900 条正式生成结果及人工评分还没有完成，所以暂时不能说哪种方法最好。</p>
+          <div class="actions"><a class="button primary" href="../demo/">先体验产品</a><a class="button secondary" href="https://github.com/yizihao8288-coder/ielts-learning-lab">查看项目代码</a></div>
         </div>
-        <aside class="question"><p>What is verified now?</p><h2>Software behaviour, not model quality.</h2><ul><li>Schema and semantic checks</li><li>One repair maximum</li><li>No-key local fallback</li><li>Request and path safety</li></ul></aside>
+        <aside class="question"><p>现在已经确认什么？</p><h2>可以确认程序会按规则工作，还不能确认第三种方法一定更好。</h2><ul><li>会检查四项内容有没有写全</li><li>会检查释义和例句是否符合学习要求</li><li>发现问题后最多只修改一次</li><li>AI 不可用时仍能继续本地练习</li></ul></aside>
       </section>
-      <section class="pipeline"><div class="section-heading"><p class="kicker">NEXT EVIDENCE</p><h2>Run, freeze, review, then report.</h2><p>Data collection will use 100 deduplicated vocabulary targets, three conditions and three repeats. Results will be computed from frozen JSONL, followed by a clearly labelled single-author blind review.</p></div></section>
-      <section class="status-card"><div><p class="kicker">WHY NO CHART YET?</p><h2>A blank result is more credible than an invented one.</h2><p>This page will only display model metrics after raw outputs are frozen and the analysis can be reproduced from code.</p></div></section>
+      <section class="pipeline"><div class="section-heading"><p class="kicker">接下来怎样比较</p><h2>同一批词，用三种方法生成，再用同一套标准检查。</h2><p>计划选取 100 个不重复的词。每种方法对每个词生成 3 次，一共得到 900 条结果。程序先检查内容，再从中抽取 60 条、隐藏生成方法后由我评分。这样可以尽量减少“因为知道是哪种方法，所以主观偏爱它”的影响。</p></div></section>
+      <section class="status-card"><div><p class="kicker">为什么现在没有结果图？</p><h2>因为正式数据还没有跑完，不能先画图再找结论。</h2><p>等 900 条结果固定保存、检查过程可以重复、人工评分完成后，这里才会展示三种方法的真实比较结果。在此之前，只报告已经完成的程序和测试。</p></div></section>
     </main>
     <footer><p>IELTS Learning Lab · MIT License</p></footer>
   </body>

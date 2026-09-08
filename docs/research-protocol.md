@@ -1,50 +1,63 @@
-# Research protocol — pre-results version
+# 研究方案（正式结果产生前版本）
 
-## Research question
+这份文档记录具体的比较规则，方便之后重复实验。想先快速了解项目，可以查看[通俗版研究进度页](https://yizihao8288-coder.github.io/ielts-learning-lab/results/)。
 
-In IELTS vocabulary item generation, can strict JSON Schema and a semantic validation–repair step improve final usability over asking for JSON in a plain prompt?
+## 想回答的问题
 
-## Conditions
+AI 生成 IELTS 词汇内容时，给它固定的填写格式，再检查实际内容，发现问题后只让它修改一次，能不能比单纯要求“请按 JSON 格式回答”得到更多可以直接学习的结果？
 
-All conditions use the same model, instructions and four fields (`word`, `meaning_zh`, `meaning_en`, `example`). The default model is `gpt-5.6-luna` with `reasoning.effort=none`; `OPENAI_MODEL` may override it.
+## 比较的三种方法
 
-1. **Baseline:** request JSON in natural-language instructions, without a response schema.
-2. **Schema:** use strict JSON Schema.
-3. **Guarded:** use strict JSON Schema, run semantic validation, then perform at most one schema-constrained repair that includes the failed rule names.
+三种方法使用同一个模型、同一批指令和四个相同字段：单词、中文释义、英文释义、例句。默认模型为 `gpt-5.6-luna`，推理强度设为 `none`；也可以通过 `OPENAI_MODEL` 更换模型。
 
-## Planned benchmark
+1. **基础方法（`baseline`）：**只用普通文字要求 AI 返回指定内容，不用程序限制回答结构。
+2. **固定格式（`schema`）：**使用 JSON Schema，严格规定四项内容及其数据类型。通俗地说，就是让 AI 按一张不能漏项的表格填写。
+3. **检查并改错（`guarded`）：**先使用同样的固定格式，再检查实际内容。如果不合格，就把具体问题告诉 AI，并且最多只允许修改一次。
 
-Deduplicate the public 99-word list by case-folded, whitespace-normalised spelling. If fewer than 100 entries remain, append the first missing item in alphabetical order from the built-in application vocabulary. Preserve single words, phrases and proper nouns. Remove personal answers and timestamps.
+## 准备怎样收集数据
 
-Run 100 words × 3 conditions × 3 repeats, producing 900 first-pass outputs. Freeze one JSONL record per word/condition/repeat with model, condition, prompt hash, response ID, UTC time, latency, token usage, validation state, raw first/final text and repair count. Never store an API key.
+先整理出 100 个不重复的词汇目标。来源以公开的 99 词列表为主，不足时从应用自带词库按字母顺序补齐。单词、短语和专有名词都会保留，但个人答题记录和时间信息不会进入研究数据。
 
-## Automatic outcomes
+每个词分别使用三种方法，每种方法重复 3 次：100 个词 × 3 种方法 × 3 次，共得到 900 条首次生成结果。
 
-- JSON parsing rate
-- schema pass rate
-- semantic-constraint pass rate
-- first-pass usability
-- guarded repair success
-- final usability
-- latency and token usage
+每条记录保存模型、生成方法、提示词指纹、响应编号、UTC 时间、耗时、Token 用量、检查结果、修改前后文本和修改次数。记录使用 JSONL 格式，也就是“一行保存一条完整记录”。API Key 永远不会写入研究数据。
 
-Usability requires both structure and every semantic rule. Metrics must be recomputed from frozen JSONL rather than manually entered.
+## 程序会检查什么
 
-## Human review
+- 回答能不能被程序正常读取；
+- 单词、中文释义、英文释义和例句是否全部存在；
+- 目标词有没有被换掉；
+- 中文释义是否真的包含中文；
+- 例句是否完整使用目标词或短语；
+- 例句长度是否在 8–35 个词之间；
+- 是否出现占位文字、重复内容或 AI 的解释性废话；
+- 第三种方法修改一次后是否解决问题；
+- 每种方法花费的时间和 Token 数量。
 
-After generation, sample 20 words with a fixed seed and show all three conditions under random anonymous labels. One author rates definition correctness, example naturalness and teaching usefulness from 1–5. Report this as a **single-author review**, not an expert study. Preserve the blinded mapping separately until ratings are complete.
+只有“格式完整”和“内容规则全部通过”同时满足，才把这条记录计为可以使用。所有统计结果都必须从保存下来的原始记录重新计算，不能手工填写。
 
-## Analysis
+## 人工怎样评价
 
-Report paired per-word descriptions, word-level bootstrap confidence intervals and a failure taxonomy. Do not claim statistical significance or learning improvement from this small evaluation. Personal training history may be reported only as an anonymous `n=1` usage description; it does not establish causality.
+生成完成后，固定抽取 20 个词，并把每个词对应的三种结果放在一起，共 60 条。页面会隐藏结果来自哪一种方法并打乱顺序，我再按 1–5 分评价：
 
-## Current status (2026-09-02)
+- 释义是否正确；
+- 例句是否自然；
+- 是否适合实际教学和复习。
 
-- Shared schema/semantic validator: implemented.
-- Guarded one-repair limit: implemented and tested.
-- Local/HTTP integration: implemented and tested.
-- 900-output evaluation: not run.
-- Human blind review: not run.
-- Research claims: none yet.
+这只能称为“单人匿名评分”，不能包装成专家评审。生成方法与匿名标签的对应关系会单独保存，评分完成前不查看。
 
-This separation is intentional: a runnable method is evidence of engineering completion, not evidence that one generation condition is better.
+## 结果怎样解释
+
+最终会比较同一个词在三种方法下的表现，并归纳常见失败类型。因为实验规模有限，不会把结果夸大为“显著提升学习效果”。个人训练记录最多只能作为一名使用者的体验描述，不能用来证明因果关系。
+
+## 当前进度（2026-09-08）
+
+- 四项固定格式和内容检查：已完成；
+- 第三种方法最多修改一次：已完成并测试；
+- 本地训练器和 HTTP 接口连接：已完成并测试；
+- 12 项自动测试：已通过；
+- 900 条正式生成结果：尚未运行；
+- 60 条人工匿名评分：尚未进行；
+- 哪种方法更好：目前没有结论。
+
+程序能够运行，只能证明工程实现已经完成；必须等正式数据和人工评分完成后，才能判断某一种生成方法是否真的更好。

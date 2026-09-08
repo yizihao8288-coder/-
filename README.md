@@ -49,25 +49,33 @@ python3 run.py
 
 The app opens at `http://127.0.0.1:8765`. Core use has no third-party package dependency. Runtime files stay inside `.runtime/` or other ignored local files.
 
-## The research question hiding inside the product
+## 项目中的研究问题（通俗版）
 
-Can strict JSON Schema, semantic checks and one targeted repair make an IELTS vocabulary item more usable than simply asking a model to “return JSON”?
+### 我遇到了什么问题
 
-I compare three versions of the same request:
+我尝试让 AI 自动生成单词、中文释义、英文释义和例句。它经常能把四项内容填得很整齐，但“格式正确”不代表“内容能学”：单词可能被换掉，中文释义里可能没有中文，例句也可能根本没有用到目标词。
 
-| Version | What the model receives | What happens afterwards |
+所以我想验证一件具体的事：**给 AI 更明确的填写格式，再检查它写的内容，发现问题后只让它改一次，能不能减少这些错误？**
+
+### 我比较哪三种方法
+
+| 方法 | 用通俗的话解释 | 代码中的名称 |
 |---|---|---|
-| `baseline` | a plain request for JSON | validate the answer |
-| `schema` | a strict JSON Schema | validate the answer |
-| `guarded` | the same strict schema | validate, then repair once if a named rule fails |
+| 方法一 | 只告诉 AI“请按指定格式回答” | `baseline` |
+| 方法二 | 用程序严格规定必须填写哪四项 | `schema` |
+| 方法三 | 在方法二之后检查内容；不合格时指出问题，只允许修改一次 | `guarded` |
 
-The structural check asks whether all four string fields are present. The content check asks more human questions: Is this still the word I requested? Is the Chinese meaning actually Chinese? Does the 8–35 word example contain the complete target? Are there placeholders, meta-talk or duplicated fields?
+为了公平，三种方法使用同一个模型、同一批单词和相同的学习字段。区别只在于“要求有多明确”和“生成后有没有检查、改错”。
 
-### Where it stands today
+### 怎样判断一条内容能不能用
 
-The validator, local/API path and 12 automated tests are working. The planned 100-word comparison and blind rating have **not** been run, so I am not putting a model-quality claim or a decorative results chart here. The [results page](https://yizihao8288-coder.github.io/ielts-learning-lab/results/) says exactly what evidence exists, and the full design is recorded in the [research protocol](docs/research-protocol.md).
+程序会检查：目标词有没有被换掉、中文释义是不是真的包含中文、例句有没有完整使用目标词、句子是否过短或过长，以及有没有占位文字、重复内容或 AI 的解释性废话。之后还会把部分结果隐藏方法名称，再由人判断释义是否正确、例句是否自然、是否适合教学。
 
-The evaluation design was informed by [Wang et al. (2023)](https://aclanthology.org/2023.nlp4dh-1.7/), [JSONSchemaBench](https://arxiv.org/abs/2501.10868), and the [Structured Output Benchmark](https://arxiv.org/abs/2604.25359).
+### 目前做到哪一步
+
+生成、检查、最多修改一次和失败后使用本地词典的程序已经完成，12 项自动测试已经通过。计划中的 **100 个词 × 3 种方法 × 3 次生成，共 900 条结果**以及人工匿名评分还没有执行完，因此目前不能宣称方法三一定更好，也不会提前放结果图。
+
+[研究进度页](https://yizihao8288-coder.github.io/ielts-learning-lab/results/)只展示目前真正完成的内容；需要查看数字、字段和保存方式时，可以继续阅读[详细研究方案](docs/research-protocol.md)。研究设计参考了 [Wang 等（2023）](https://aclanthology.org/2023.nlp4dh-1.7/)、[JSONSchemaBench](https://arxiv.org/abs/2501.10868) 和 [Structured Output Benchmark](https://arxiv.org/abs/2604.25359)。
 
 ## One product, two ways to run it
 

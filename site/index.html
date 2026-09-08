@@ -1,81 +1,81 @@
 <!doctype html>
-<html lang="en">
+<html lang="zh-CN">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23c95735'/%3E%3Ctext x='32' y='45' text-anchor='middle' font-size='42' font-style='italic' fill='white'%3EI%3C/text%3E%3C/svg%3E">
-    <meta name="description" content="IELTS Learning Lab — a local-first practice app and constraint-aware LLM generation research prototype.">
+    <meta name="description" content="IELTS Learning Lab：一个从真实背词需求出发的学习工具，以及一项关于 AI 生成词汇内容可靠性的研究。">
     <title>IELTS Learning Lab</title>
     <link rel="stylesheet" href="styles.css">
   </head>
   <body>
     <header class="nav">
       <a class="brand" href="./"><span>I</span> IELTS Learning Lab</a>
-      <nav aria-label="Primary">
-        <a href="./demo/">Demo</a>
-        <a href="./results/">Research status</a>
-        <a href="https://github.com/yizihao8288-coder/ielts-learning-lab">GitHub</a>
+      <nav aria-label="主要导航">
+        <a href="./demo/">在线体验</a>
+        <a href="./results/">研究进度</a>
+        <a href="https://github.com/yizihao8288-coder/ielts-learning-lab">GitHub 项目</a>
       </nav>
     </header>
 
     <main>
       <section class="hero">
         <div>
-          <p class="kicker">IELTS PRACTICE, WITH A RESEARCH QUESTION INSIDE</p>
-          <h1>Valid JSON is not necessarily a valid learning item.</h1>
-          <p class="lede">I started this as a place to practise the IELTS words I kept getting wrong. It became a research question when I noticed that “valid JSON” could still be a bad learning item. The public demo needs no account and no API key.</p>
+          <p class="kicker">从真实的 IELTS 背词需求出发</p>
+          <h1>格式正确，不代表这条单词内容真的能学。</h1>
+          <p class="lede">我最初只是想做一个符合自己复习习惯的词汇工具。后来我发现，AI 即使把单词、释义和例句都填在正确的位置，也可能写错词义，或者给出不能直接学习的例句。于是，这个产品问题变成了我想认真验证的研究问题。</p>
           <div class="actions">
-            <a class="button primary" href="./demo/">Open the live demo</a>
-            <a class="button secondary" href="./results/">See research status</a>
+            <a class="button primary" href="./demo/">打开在线体验</a>
+            <a class="button secondary" href="./results/">查看研究进度</a>
           </div>
-          <p class="privacy">Zero-key demo · Browser-local data · No target words sent to a server</p>
+          <p class="privacy">无需注册 · 无需 API Key · 演示数据只保存在当前浏览器</p>
         </div>
         <aside class="question">
-          <p>Research question</p>
-          <h2>Does schema + semantic validation + one repair improve vocabulary-item usability over a plain JSON prompt?</h2>
+          <p>我想回答的问题</p>
+          <h2>给 AI 加上固定填写格式、内容检查和一次改错机会，能不能让它生成更可靠、更适合直接学习的词汇内容？</h2>
           <ul>
-            <li>Same model and fields</li>
-            <li>Structure and content scored separately</li>
-            <li>No model-quality claim before data collection</li>
+            <li>同一批单词、同一个模型</li>
+            <li>比较三种不同的生成方法</li>
+            <li>程序检查后，再进行匿名人工评分</li>
           </ul>
         </aside>
       </section>
 
       <section class="product" aria-labelledby="product-title">
         <div class="section-heading">
-          <p class="kicker">TRY THE THING</p>
-          <h2 id="product-title">Start practising in one click</h2>
-          <p>Listening, dictation, reading, writing, favourites, mistake review, browser storage and speech remain available without a model.</p>
+          <p class="kicker">先体验产品</p>
+          <h2 id="product-title">打开网页就能开始练习</h2>
+          <p>听力、填空、阅读、写作、收藏和错题复习都可以直接使用。核心练习不依赖 AI，老师无需配置任何密钥。</p>
         </div>
         <figure>
-          <img src="assets/app-listening.png" alt="IELTS Learning Lab listening practice screen">
-          <figcaption>Actual application interface — listening mode with answer review.</figcaption>
+          <img src="assets/app-listening.png" alt="IELTS Learning Lab 听力练习界面">
+          <figcaption>项目的真实界面：听力练习及答题反馈。</figcaption>
         </figure>
       </section>
 
       <section class="pipeline" aria-labelledby="pipeline-title">
         <div class="section-heading">
-          <p class="kicker">SMALL, EXPLAINABLE PIPELINE</p>
-          <h2 id="pipeline-title">Four decisions, each inspectable</h2>
+          <p class="kicker">AI 内容怎样通过检查</p>
+          <h2 id="pipeline-title">四步判断这条内容能不能用</h2>
         </div>
         <ol class="steps">
-          <li><span>01</span><strong>Generate</strong><small>Four fixed learning fields</small></li>
-          <li><span>02</span><strong>Check structure</strong><small>Strict JSON Schema</small></li>
-          <li><span>03</span><strong>Check meaning</strong><small>Eight explicit rules</small></li>
-          <li><span>04</span><strong>Repair once</strong><small>Then fall back locally</small></li>
+          <li><span>01</span><strong>生成内容</strong><small>单词、中文释义、英文释义和例句</small></li>
+          <li><span>02</span><strong>检查有没有漏项</strong><small>四项内容是否完整、格式是否正确</small></li>
+          <li><span>03</span><strong>检查内容能否学习</strong><small>词有没有换、释义和例句是否符合要求</small></li>
+          <li><span>04</span><strong>只尝试改错一次</strong><small>仍不合格就使用可靠的本地词典</small></li>
         </ol>
       </section>
 
       <section class="status-card">
         <div>
-          <p class="kicker">WHAT I KNOW SO FAR</p>
-          <h2>The app is tested. The comparison still needs to be run.</h2>
-          <p>Twelve automated tests cover the validator, benchmark selection, repair ceiling, API inputs, no-key fallback, request limits and path safety. I will not claim the guarded method is better until the planned outputs and ratings actually exist.</p>
+          <p class="kicker">目前可以确认什么</p>
+          <h2>训练器和检查程序已经做好，三种方法谁更好还要等正式比较。</h2>
+          <p>目前 12 项自动测试已经通过，说明程序能按设定规则运行。计划中的 900 条生成结果和人工匿名评分还没有完成，因此这里不会提前写“某种方法更好”。</p>
         </div>
-        <a class="button secondary" href="./results/">See what is done and what comes next</a>
+        <a class="button secondary" href="./results/">查看已完成和待完成内容</a>
       </section>
     </main>
 
-    <footer><p>Built from a real IELTS study habit · Zihao Yi · MIT License</p></footer>
+    <footer><p>来自真实 IELTS 学习需求 · Zihao Yi · MIT License</p></footer>
   </body>
 </html>
